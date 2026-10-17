@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA in your language - Registrar Negocio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <h1>USA <span class="highlight">in your language</span></h1>
+        </div>
+        <nav>
+            <a href="index.html">Inicio / Buscar</a>
+            <a href="register.html" class="active">Registrar Negocio</a>
+            <a href="#">Mi Cuenta</a>
+        </nav>
+    </header>
+
+    <main class="form-container">
+        <h2>Registro de Nuevo Negocio / Emprendedor</h2>
+        <p>Publica tu servicio en tu idioma y conecta con clientes en tu área.</p>
+
+        <form id="businessRegisterForm" onsubmit="event.preventDefault(); alert('¡Negocio registrado con éxito!'); window.location.href='index.html';">
+            <!-- 1. Información General -->
+            <section class="form-section">
+                <h3>1. Información General</h3>
+                <div class="input-group">
+                    <label for="businessName">Nombre del Negocio o Servicio *</label>
+                    <input type="text" id="businessName" placeholder="Ej. Carlos Handyman / Miami Express Taxi" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="preferredLanguage">Idioma Preferido del Negocio *</label>
+                    <select id="preferredLanguage" required>
+                        <option value="es">Español</option>
+                        <option value="en">Inglés</option>
+                        <option value="fr">Francés</option>
+                        <option value="pt">Portugués</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Idiomas Adicionales que Hablan *</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="es" checked disabled> Español</label>
+                        <label><input type="checkbox" value="en"> Inglés</label>
+                        <label><input type="checkbox" value="fr"> Francés</label>
+                        <label><input type="checkbox" value="pt"> Portugués</label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Tipo de Negocio y Documentación -->
+            <section class="form-section">
+                <h3>2. Tipo de Negocio y Verificación Legal</h3>
+                <div class="input-group">
+                    <label for="businessType">Selecciona la Estructura de tu Negocio *</label>
+                    <select id="businessType" onchange="updateRequiredDocuments()" required>
+                        <option value="">-- Selecciona una opción --</option>
+                        <option value="handyman">Emprendedor / Handyman / Servicios Menores</option>
+                        <option value="taxi">Transporte / Taxi por cuenta propia / Rideshare</option>
+                        <option value="contractor">Contratista Licenciado (Plomero, Electricista, AC, etc.)</option>
+                        <option value="llc">Empresa Grande / Compañía Registrada (LLC, Inc, Corp)</option>
+                    </select>
+                </div>
+
+                <!-- Requisitos dinámicos cargados por app.js -->
+                <div id="dynamicDocuments" class="dynamic-docs-box">
+                    <p class="placeholder-text">Selecciona un tipo de negocio arriba para ver los requisitos de registro.</p>
+                </div>
+            </section>
+
+            <!-- 3. Ubicación y Contacto -->
+            <section class="form-section">
+                <h3>3. Ubicación y Cobertura</h3>
+                <div class="input-group">
+                    <label for="zipCode">Código Postal (Zip Code) de Operación *</label>
+                    <input type="text" id="zipCode" placeholder="Ej. 33101" required>
+                </div>
+                <div class="input-group">
+                    <label for="coverageRadius">Radio de Cobertura (Millas) *</label>
+                    <select id="coverageRadius">
+                        <option value="5">Hasta 5 millas</option>
+                        <option value="15" selected>Hasta 15 millas</option>
+                        <option value="30">Hasta 30 millas</option>
+                        <option value="50">Toda la ciudad / condado</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="phone">Teléfono de Contacto *</label>
+                    <input type="text" id="phone" placeholder="(305) 000-0000" required>
+                </div>
+            </section>
+
+            <button type="submit" class="btn-submit">Publicar mi Negocio</button>
+        </form>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
