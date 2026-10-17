@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA in your language - Encuentra Servicios en tu Idioma</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <h1>USA <span class="highlight">in your language</span></h1>
+        </div>
+        <nav>
+            <a href="index.html" class="active">Inicio</a>
+            <a href="register.html">Registrar mi Negocio</a>
+            <a href="#">Mi Cuenta</a>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        <!-- Buscador por filtro de cercanía e idioma -->
+        <section class="search-box">
+            <h2>Encuentra negocios y profesionales cerca de ti</h2>
+            <div class="search-filters">
+                <input type="text" id="searchInput" placeholder="¿Qué buscas? (Handyman, Taxi, Plomero, LLC...)">
+                
+                <select id="langSelect">
+                    <option value="">Todos los idiomas</option>
+                    <option value="es" selected>Español</option>
+                    <option value="en">Inglés</option>
+                    <option value="fr">Francés</option>
+                </select>
+
+                <select id="radiusSelect">
+                    <option value="5">Radio: 5 millas</option>
+                    <option value="15" selected>Radio: 15 millas</option>
+                    <option value="30">Radio: 30 millas</option>
+                    <option value="50">Radio: 50 millas</option>
+                </select>
+
+                <button class="btn-search" onclick="filterBusinesses()">Buscar</button>
+            </div>
+        </section>
+
+        <!-- Listado de Negocios Destacados -->
+        <section class="businesses-section">
+            <h3>Negocios Disponibles en tu Área</h3>
+            <div class="businesses-grid" id="businessesContainer">
+                
+                <!-- Tarjeta 1: Taxi -->
+                <div class="business-card" data-lang="es" data-miles="3.2">
+                    <div class="card-header">
+                        <span class="badge verified">Licencia & Seguro Validado</span>
+                        <h4>Miami Express Taxi & Rides</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Servicio de transporte privado local, viajes interurbanos y traslados al aeropuerto 24/7.</p>
+                        <p class="lang-info">🗣️ <strong>Idiomas:</strong> Español (Preferido), Inglés</p>
+                        <p class="distance-info">📍 A 3.2 millas de tu ubicación</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="rating">★ 4.9 (128 reseñas)</span>
+                        <a href="tel:1234567890" class="btn-contact">Contactar</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Handyman -->
+                <div class="business-card" data-lang="es" data-miles="1.5">
+                    <div class="card-header">
+                        <span class="badge verified">Handyman Emprendedor</span>
+                        <h4>Carlos Handyman & Repairs</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Reparaciones generales del hogar, electricidad básica, pintura y ensamblaje de muebles.</p>
+                        <p class="lang-info">🗣️ <strong>Idiomas:</strong> Español (Preferido)</p>
+                        <p class="distance-info">📍 A 1.5 millas de tu ubicación</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="rating">★ 4.8 (94 reseñas)</span>
+                        <a href="tel:1234567890" class="btn-contact">Contactar</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: LLC -->
+                <div class="business-card" data-lang="en" data-miles="5.0">
+                    <div class="card-header">
+                        <span class="badge verified">Corporación LLC Registrada</span>
+                        <h4>Tech Solutions & Marketing LLC</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Servicios de tecnología, creación de sitios web y publicidad bilingüe para pequeñas empresas.</p>
+                        <p class="lang-info">🗣️ <strong>Idiomas:</strong> Inglés (Preferido), Español</p>
+                        <p class="distance-info">📍 A 5.0 millas de tu ubicación</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="rating">★ 5.0 (210 reseñas)</span>
+                        <a href="tel:1234567890" class="btn-contact">Contactar</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
