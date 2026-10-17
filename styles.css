@@ -1,0 +1,227 @@
+:root {
+    --primary-blue: #0b2545;
+    --accent-red: #d90429;
+    --light-bg: #f4f6f9;
+    --white: #ffffff;
+    --text-dark: #1d2d44;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+}
+
+header {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid var(--accent-red);
+}
+
+header .highlight {
+    color: var(--accent-red);
+}
+
+nav a {
+    color: var(--white);
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: 600;
+}
+
+nav a.active {
+    border-bottom: 2px solid var(--accent-red);
+    padding-bottom: 4px;
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.search-box {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.search-box h2 {
+    color: var(--primary-blue);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.search-filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 15px;
+}
+
+input, select {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.btn-search {
+    background-color: var(--accent-red);
+    color: var(--white);
+    border: none;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-search:hover {
+    background-color: #b80322;
+}
+
+.businesses-section h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+}
+
+.businesses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.business-card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-top: 5px solid var(--primary-blue);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-header {
+    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+}
+
+.card-body {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.business-card h4 {
+    font-size: 1.25rem;
+    color: var(--primary-blue);
+    margin: 8px 0 0 0;
+}
+
+.badge {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.lang-info, .distance-info {
+    font-size: 0.9rem;
+    margin: 8px 0;
+    color: #475569;
+}
+
+.card-footer {
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-contact {
+    background: var(--primary-blue);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.rating {
+    color: #f59e0b;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.form-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.input-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.dynamic-docs-box {
+    background: #f8fafc;
+    border: 1px dashed var(--primary-blue);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: var(--accent-red);
+    color: var(--white);
+    border: none;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-submit:hover {
+    background-color: #b80322;
+}
