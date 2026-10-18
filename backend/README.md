@@ -34,3 +34,16 @@ python3 -m unittest discover -s tests -v
 ```
 
 Cubre registro, bloqueo antes de verificar, código de un solo uso, sesión, CSRF, permisos de administración, privacidad de solicitudes, aprobación, rechazo con motivo, decisión duplicada, ocultación de dirección y correo públicos, bloqueo de archivos privados y cierre de sesión.
+
+
+## Panel de Administración
+
+Resumen de cuentas y negocios; solicitudes pendientes; listado de negocios con búsqueda y detalle; clientes con búsqueda; historial de solicitudes y decisiones; roles de equipo; registro manual de movimientos y estados de cuenta mensuales en USD con impresión y CSV. Los apartados de campañas, tickets, archivos y vencimientos se presentan explícitamente como pendientes; no simulan datos ni verificación.
+
+Finanzas usa importes enteros en centavos y criterio de caja. Calcula saldo inicial, cobros de membresías por mes de activación del negocio (nuevo/anterior/desconocido), otros ingresos, salidas, ajustes y cierre. Un saldo inicial documentado se admite como primer movimiento. Los gastos admiten servidor, traducciones, comisiones, nómina, anuncios, seguros, legal, reembolsos, contracargos y otros. Los registros manuales no ejecutan pagos ni cobros. El estado interno no es un extracto bancario ni un cálculo de utilidad fiscal. No hay conciliación bancaria ni edición/anulación de movimientos todavía. Se requiere respaldar cada registro antes de utilizarlo fuera de pruebas.
+
+El mes se agrupa por fechas ISO; las activaciones se interpretan en UTC. Los registros históricos sin fechas no reciben fechas inventadas. Los movimientos tienen claves idempotentes, registro de autor y eventos de auditoría.
+
+Mi equipo admite cuentas existentes verificadas. Solo el correo principal configurado y autenticado como administrador puede asignar o retirar acceso. Roles: moderación (solicitudes, negocios, historial y verificación); soporte (resumen y clientes); finanzas (resumen y movimientos). Los permisos se comprueban en servidor en cada solicitud. Cambiar permisos revoca sesiones. El cargo laboral se guarda por separado del rol. No existen invitaciones por correo ni gestión de nómina todavía.
+
+Las pruebas adicionales cubren permisos de cada rol, exclusividad del administrador principal, revocación de sesiones, clasificación de ingresos por mes de activación, arrastre de saldos, resultado mensual negativo con saldo final positivo, meses inválidos, precisión monetaria y movimientos duplicados.

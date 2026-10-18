@@ -1,4 +1,7 @@
 """Private local pilot. Standard library only; not a production deployment server."""
+import sys
+sys.path.insert(0,str(__import__("pathlib").Path(__file__).resolve().parent))
+import admin_panel
 import argparse, base64, getpass, hashlib, hmac, json, os, re, secrets, sqlite3, threading, time
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -17,6 +20,7 @@ with db() as c:
  CREATE TABLE IF NOT EXISTS verification(token TEXT PRIMARY KEY,user_id INTEGER NOT NULL REFERENCES users(id),expires REAL NOT NULL);
  CREATE TABLE IF NOT EXISTS listings(id INTEGER PRIMARY KEY,owner_id INTEGER NOT NULL REFERENCES users(id),payload TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending',reason TEXT NOT NULL DEFAULT '',updated REAL NOT NULL);
  CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,actor_id INTEGER NOT NULL REFERENCES users(id),listing_id INTEGER NOT NULL REFERENCES listings(id),action TEXT NOT NULL,reason TEXT NOT NULL,created REAL NOT NULL);''')
+admin_panel.initialize(db)
 try:os.chmod(DB,0o600)
 except OSError:pass
 def digest(text):return hashlib.sha256(text.encode()).hexdigest()
@@ -26,7 +30,9 @@ def password_valid(password,stored):
  try:
   raw=base64.b64decode(stored);return hmac.compare_digest(raw[16:],hashlib.scrypt(password.encode(),salt=raw[:16],n=16384,r=8,p=1))
  except Exception:return False
-def public_user(row):return {k:row[k] for k in ('id','name','email','language','verified','admin')}
+def public_user(row):
+ result={k:row[k] for k in ('id','name','email','language','verified','admin')}
+ result['permissions']=sorted(admin_panel.permissions(db,row,PRIMARY_ADMIN_EMAIL));result['primary_admin']=admin_panel.primary(row,PRIMARY_ADMIN_EMAIL);return result
 class APIError(Exception):
  def __init__(self,status,message):self.status=status;self.message=message
 class Handler(BaseHTTPRequestHandler):
@@ -68,6 +74,7 @@ class Handler(BaseHTTPRequestHandler):
   except APIError as e:self.reply(e.status,{'error':e.message})
  def get(self):
   path=urlparse(self.path).path
+  if path.startswith('/api/admin/') and path!='/api/admin/listings':return admin_panel.get(self,path,urlparse(self.path).query,db,APIError,PRIMARY_ADMIN_EMAIL)
   if path=='/api/session':
    row=self.session(False);return self.reply(200,{'user':public_user(row) if row else None,'csrf':row['csrf'] if row else None,'mode':'private-local-pilot'})
   if path=='/api/listings':
@@ -78,9 +85,9 @@ class Handler(BaseHTTPRequestHandler):
    return self.reply(200,{'listings':result})
   if path in ('/api/my-listings','/api/admin/listings'):
    user=self.session()
-   if path.startswith('/api/admin') and not user['admin']:raise APIError(403,'Solo Administración puede revisar solicitudes.')
+   if path.startswith('/api/admin') and 'listings' not in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL):raise APIError(403,'Solo Administración puede revisar solicitudes.')
    with db() as c:
-    rows=c.execute('SELECT l.*,u.name AS owner_name,u.email AS owner_email FROM listings l JOIN users u ON u.id=l.owner_id'+('' if user['admin'] and path.startswith('/api/admin') else ' WHERE l.owner_id=?')+' ORDER BY l.id DESC',() if user['admin'] and path.startswith('/api/admin') else (user['id'],)).fetchall()
+    rows=c.execute('SELECT l.*,u.name AS owner_name,u.email AS owner_email FROM listings l JOIN users u ON u.id=l.owner_id'+('' if 'listings' in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL) and path.startswith('/api/admin') else ' WHERE l.owner_id=?')+' ORDER BY l.id DESC',() if 'listings' in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL) and path.startswith('/api/admin') else (user['id'],)).fetchall()
    return self.reply(200,{'listings':[{**dict(r),'payload':json.loads(r['payload'])} for r in rows]})
   allowed=path=='/' or path in ('/index.html','/register.html','/app.js','/styles.css') or re.fullmatch(r'/assets/[a-zA-Z0-9_.-]+\.(svg|png|webp|jpg)',path)
   if not allowed:raise APIError(404,'No encontrado.')
@@ -94,6 +101,7 @@ class Handler(BaseHTTPRequestHandler):
   except sqlite3.IntegrityError:self.reply(409,{'error':'No se pudo completar la solicitud. Comprueba los datos.'})
  def post(self):
   path=urlparse(self.path).path
+  if path in ('/api/admin/ledger','/api/admin/team'):return admin_panel.post(self,path,db,APIError,PRIMARY_ADMIN_EMAIL)
   if path in ('/api/register','/api/login','/api/verify'):self.check_write();self.rate_limit()
   if path=='/api/register':
    data=self.body();name=str(data.get('name','')).strip();email=str(data.get('email','')).strip().lower();password=data.get('password','');language=str(data.get('language','es'))
@@ -102,7 +110,7 @@ class Handler(BaseHTTPRequestHandler):
    if not re.fullmatch(r'[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})*',language):raise APIError(400,'Idioma inválido.')
    token=secrets.token_urlsafe(32)
    with db() as c:
-    uid=c.execute('INSERT INTO users(name,email,password,language) VALUES(?,?,?,?)',(name,email,password_hash(password),language)).lastrowid;c.execute('INSERT INTO verification VALUES(?,?,?)',(digest(token),uid,time.time()+3600))
+    uid=c.execute('INSERT INTO users(name,email,password,language) VALUES(?,?,?,?)',(name,email,password_hash(password),language)).lastrowid;c.execute('INSERT INTO verification VALUES(?,?,?)',(digest(token),uid,time.time()+3600));c.execute('UPDATE users SET created_at=? WHERE id=?',(time.time(),uid))
    outbox=DATA/'outbox';outbox.mkdir(mode=0o700,exist_ok=True);file=outbox/f'{secrets.token_hex(10)}.txt';fd=os.open(file,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
    with os.fdopen(fd,'w') as f:f.write('PRUEBA LOCAL. No se ha enviado un correo.\nPara: '+email+'\nCódigo de verificación: '+token+'\nCaduca en una hora.\n')
    return self.reply(201,{'message':'Cuenta creada para prueba privada. El operador debe consultar el código en la bandeja local; no se ha enviado correo.'})
@@ -138,10 +146,13 @@ class Handler(BaseHTTPRequestHandler):
    if data['primaryLanguage'] in langs:raise APIError(400,'El idioma principal no debe repetirse.')
    clean={k:data[k].strip() for k in required};clean.update({k:str(data.get(k,''))[:4000] for k in ('legalName','registrationNumber','legalNotes')});clean['additionalLanguages']=langs
    with db() as c:lid=c.execute('INSERT INTO listings(owner_id,payload,updated) VALUES(?,?,?)',(user['id'],json.dumps(clean),time.time())).lastrowid
+   with db() as c:
+    c.execute('UPDATE listings SET created_at=? WHERE id=?',(time.time(),lid))
+    c.execute('INSERT INTO audit(actor_id,listing_id,action,reason,created) VALUES(?,?,?,?,?)',(user['id'],lid,'submitted','Solicitud recibida',time.time()))
    return self.reply(201,{'id':lid,'status':'pending','message':'Solicitud enviada a Administración. Aún no está publicada.'})
   match=re.fullmatch(r'/api/admin/listings/(\d+)/decision',path)
   if match:
-   if not user['admin']:raise APIError(403,'Solo Administración puede decidir.')
+   if 'listings' not in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL):raise APIError(403,'Solo Administración puede decidir.')
    data=self.body();status=data.get('status');reason=str(data.get('reason','')).strip()
    if status not in ('approved','rejected'):raise APIError(400,'Decisión inválida.')
    if status=='rejected' and not reason:raise APIError(400,'Escribe el motivo del rechazo.')
@@ -149,6 +160,7 @@ class Handler(BaseHTTPRequestHandler):
    with db() as c:
     result=c.execute("UPDATE listings SET status=?,reason=?,updated=? WHERE id=? AND status='pending'",(status,reason,time.time(),int(match[1])))
     if result.rowcount!=1:raise APIError(409,'Solicitud inexistente o ya revisada.')
+    if status=='approved':c.execute('UPDATE listings SET activated_at=COALESCE(activated_at,?) WHERE id=?',(time.time(),int(match[1])))
     c.execute('INSERT INTO audit(actor_id,listing_id,action,reason,created) VALUES(?,?,?,?,?)',(user['id'],int(match[1]),status,reason,time.time()))
    return self.reply(200,{'status':status,'message':'Negocio publicado. Felicitaciones.' if status=='approved' else 'Solicitud rechazada con motivo.'})
   raise APIError(404,'No encontrado.')
