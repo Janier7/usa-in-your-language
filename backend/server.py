@@ -89,7 +89,7 @@ class Handler(BaseHTTPRequestHandler):
    with db() as c:
     rows=c.execute('SELECT l.*,u.name AS owner_name,u.email AS owner_email FROM listings l JOIN users u ON u.id=l.owner_id'+('' if 'listings' in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL) and path.startswith('/api/admin') else ' WHERE l.owner_id=?')+' ORDER BY l.id DESC',() if 'listings' in admin_panel.permissions(db,user,PRIMARY_ADMIN_EMAIL) and path.startswith('/api/admin') else (user['id'],)).fetchall()
    return self.reply(200,{'listings':[{**dict(r),'payload':json.loads(r['payload'])} for r in rows]})
-  allowed=path=='/' or path in ('/index.html','/register.html','/app.js','/styles.css') or re.fullmatch(r'/assets/[a-zA-Z0-9_.-]+\.(svg|png|webp|jpg)',path)
+  allowed=path=='/' or path in ('/index.html','/register.html','/app.js','/styles.css','/supabase-client.js') or re.fullmatch(r'/assets/[a-zA-Z0-9_.-]+\.(svg|png|webp|jpg)',path)
   if not allowed:raise APIError(404,'No encontrado.')
   file=ROOT/('index.html' if path=='/' else path.lstrip('/'))
   if not file.is_file():raise APIError(404,'No encontrado.')
