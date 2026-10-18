@@ -1,0 +1,10 @@
+revoke all on public.platform_events,public.platform_ledger,public.support_tickets,public.support_replies,public.promotions,public.business_verifications,public.platform_settings,public.service_catalog from anon,authenticated;
+grant select on public.platform_events,public.platform_ledger,public.support_tickets,public.support_replies,public.business_verifications to authenticated;
+grant insert(entry_date,kind,category,amount_cents,description,reference,listing_id,request_key) on public.platform_ledger to authenticated;
+grant insert(subject,message),update(status) on public.support_tickets to authenticated;
+grant insert(ticket_id,message) on public.support_replies to authenticated;
+grant select on public.promotions,public.platform_settings,public.service_catalog to anon,authenticated;
+grant insert(listing_id,title,description,image_url,language,starts_at,ends_at,status),update(title,description,image_url,language,starts_at,ends_at,status) on public.promotions to authenticated;
+grant insert(listing_id,kind,reference,source_url,checked_on,expires_on,note) on public.business_verifications to authenticated;
+grant insert(key,value),update(value) on public.platform_settings to authenticated;
+grant insert(family,service,active),update(active) on public.service_catalog to authenticated;
