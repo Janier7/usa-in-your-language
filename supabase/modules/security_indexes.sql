@@ -1,0 +1,10 @@
+create index admin_devices_user on private.admin_devices(user_id);
+create index platform_events_actor on public.platform_events(actor_id);
+create index platform_ledger_actor on public.platform_ledger(actor_id);
+create index support_replies_author on public.support_replies(author_id);
+alter policy applications_create on public.business_applications with check(owner_id=(select auth.uid()) and status='pending' and reason='' and activated_at is null and coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false)=false);
+alter policy ledger_insert on public.platform_ledger with check((select private.has_permission('finance')) and actor_id=(select auth.uid()));
+alter policy tickets_read on public.support_tickets using(owner_id=(select auth.uid()) or (select private.has_permission('users')));
+alter policy tickets_create on public.support_tickets with check(owner_id=(select auth.uid()) and status='open' and exists(select 1 from public.profiles where id=(select auth.uid()) and verified));
+alter policy reply_read on public.support_replies using(exists(select 1 from public.support_tickets t where t.id=ticket_id and (t.owner_id=(select auth.uid()) or (select private.has_permission('users')))));
+alter policy reply_create on public.support_replies with check(author_id=(select auth.uid()) and exists(select 1 from public.support_tickets t where t.id=ticket_id and t.status<>'closed' and (t.owner_id=(select auth.uid()) or (select private.has_permission('users')))));
