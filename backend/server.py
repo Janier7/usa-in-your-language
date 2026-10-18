@@ -4,6 +4,7 @@ from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[1]
+PRIMARY_ADMIN_EMAIL='janiermirabal@gmail.com'
 DATA=Path(os.environ.get('USA_DATA_DIR',str(ROOT/'.private-data')))
 DATA.mkdir(mode=0o700,parents=True,exist_ok=True)
 DB=DATA/'pilot.sqlite3'
@@ -154,9 +155,16 @@ class Handler(BaseHTTPRequestHandler):
 def main():
  parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=8000);parser.add_argument('--create-admin',action='store_true');args=parser.parse_args()
  if args.create_admin:
-  email=input('Correo del administrador: ').strip().lower();name=input('Nombre: ').strip();password=getpass.getpass('Contraseña (12 caracteres mínimo): ')
+  email=PRIMARY_ADMIN_EMAIL;print('Administrador principal: '+email);name=input('Nombre: ').strip();password=getpass.getpass('Contraseña (12 caracteres mínimo): ')
   if len(password)<12:raise SystemExit('Contraseña demasiado corta.')
-  with db() as c:c.execute('INSERT INTO users(name,email,password,language,verified,admin) VALUES(?,?,?,?,1,1)',(name,email,password_hash(password),'es'))
+  with db() as c:
+   existing=c.execute('SELECT id FROM users WHERE email=?',(email,)).fetchone()
+   if existing:
+    if input('La cuenta existe. Escribe CONFIRMAR para establecer credenciales y administración principal: ')!='CONFIRMAR':raise SystemExit('Sin cambios.')
+    c.execute('UPDATE users SET name=?,password=?,verified=1,admin=1 WHERE id=?',(name,password_hash(password),existing['id']))
+    c.execute('DELETE FROM sessions WHERE user_id=?',(existing['id'],))
+    c.execute('DELETE FROM verification WHERE user_id=?',(existing['id'],))
+   else:c.execute('INSERT INTO users(name,email,password,language,verified,admin) VALUES(?,?,?,?,1,1)',(name,email,password_hash(password),'es'))
   print('Administrador local creado.');return
  print(f'Prueba privada en http://127.0.0.1:{args.port}. No apto para exposición pública.');ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()
 if __name__=='__main__':main()
