@@ -11,7 +11,7 @@ python3 backend/server.py --create-admin
 python3 backend/server.py --port 8000
 ```
 
-El primer comando solicita nombre, correo y contraseña sin mostrarla. No existe una contraseña administrativa predeterminada ni un botón público que conceda permisos.
+El correo del administrador principal queda configurado como `janiermirabal@gmail.com`. El primer comando solicita nombre y contraseña sin mostrarla. Si la cuenta ya existe, requiere confirmación local antes de establecer sus credenciales administrativas y revoca sus sesiones anteriores. No existe una contraseña administrativa predeterminada ni un botón público que conceda permisos.
 
 Abrir http://127.0.0.1:8000 y usar Menú > Crear cuenta. El servidor guarda el código de verificación de prueba en `.private-data/outbox/`; no envía un correo. Copiar el código en Verificar correo y entrar. Los códigos caducan en una hora y solo se usan una vez.
 
