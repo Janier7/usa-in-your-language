@@ -1,0 +1,55 @@
+name: Deploy USA in Your Language to Cloudflare Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'register.html'
+      - 'assets/**'
+      - 'admin-modules.js'
+      - 'supabase-client.js'
+      - 'app.js'
+      - 'styles.css'
+      - '.github/workflows/deploy-cloudflare-pages.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check Cloudflare configuration
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: |
+          test -n "$CF_API_TOKEN" || { echo "::error::Configure CLOUDFLARE_API_TOKEN in repository secrets"; exit 1; }
+          test -n "$CF_ACCOUNT_ID" || { echo "::error::Configure CLOUDFLARE_ACCOUNT_ID in repository variables"; exit 1; }
+          test -n "$CF_PROJECT_NAME" || { echo "::error::Configure CLOUDFLARE_PAGES_PROJECT in repository variables"; exit 1; }
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Prepare static site
+        run: |
+          mkdir -p dist
+          cp index.html register.html app.js styles.css admin-modules.js supabase-client.js dist/
+          cp -R assets dist/assets
+          if [ -f _headers ]; then cp _headers dist/; fi
+          if [ -f _redirects ]; then cp _redirects dist/; fi
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: |
+          npx --yes wrangler@4.45.0 pages deploy dist --project-name "$CF_PROJECT_NAME" --branch main
